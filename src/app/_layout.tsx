@@ -1,9 +1,14 @@
-import '../global.css';
+import { Stack } from "expo-router";
 
-import '../translation';
+import { TRPCProvider } from "~/utils/api";
 
-import { Stack } from 'expo-router';
+import "../global.css";
+import "../translation";
 
 export default function Layout() {
-  return <Stack />;
+  return (
+    <TRPCProvider>
+      <Stack />
+    </TRPCProvider>
+  );
 }

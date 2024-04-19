@@ -1,7 +1,7 @@
-import en from 'src/translation/en.json';
-import fr from 'src/translation/fr.json';
+import en from "src/translation/en.json";
+import fr from "src/translation/fr.json";
 
-import { init18n } from '~/src/core/i18n/init';
+import { init18n } from "~/core/i18n/init";
 
 export const resources = {
   en: {
@@ -12,7 +12,7 @@ export const resources = {
   },
 };
 
-export const fallbackLng = 'en';
+export const fallbackLng = "en";
 
 export type LanguageCode = keyof typeof resources;
 
