@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import { useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -12,19 +12,11 @@ import { useAuth } from "~/utils/auth";
 export default function Profile() {
   const router = useRouter();
 
-  const { signOut } = useAuth();
-
-  const apiUtils = api.useUtils();
   const { data: user } = api.users.me.useQuery();
   // const { data: saveGames } = api.saveGames.list.useQuery();
 
   function handleGoBack() {
     router.back();
-  }
-
-  async function handleSignOut() {
-    await signOut();
-    apiUtils.invalidate();
   }
 
   return (
@@ -71,13 +63,31 @@ export default function Profile() {
           </View> */}
 
             <View>
-              <Button intent="danger" onPress={handleSignOut}>
-                Sign out
-              </Button>
+              <SignOutButton />
             </View>
           </View>
         </View>
       </SafeAreaView>
     </BaseAppBackground>
+  );
+}
+
+function SignOutButton() {
+  const { signOut } = useAuth();
+  const apiUtils = api.useUtils();
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleSignOut() {
+    setIsLoading(true);
+    await signOut();
+    await apiUtils.invalidate();
+    setIsLoading(false);
+  }
+
+  return (
+    <Button intent="danger" onPress={handleSignOut} loading={isLoading}>
+      Sign out
+    </Button>
   );
 }
