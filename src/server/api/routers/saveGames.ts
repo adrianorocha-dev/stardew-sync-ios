@@ -2,17 +2,19 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
+import { createTRPCRouter, protectedProcedure } from "../trpc";
+
+import { saveGames } from "~/server/db/schema";
 import {
   createPresignedDownloadURL,
   createPresignedUploadURL,
-} from "../services/s3";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { betterPromiseSettle } from "../utils/betterPromiseSettle";
+} from "~/server/services/s3";
+import { betterPromiseSettle } from "~/utils/betterPromiseSettle";
 
 export const saveGamesRouter = createTRPCRouter({
   list: protectedProcedure.query(async ({ ctx }) => {
     const saves = await ctx.db.query.saveGames.findMany({
-      where: (save, { eq }) => eq(save.userId, ctx.auth.userId),
+      where: (save, { eq }) => eq(save.userId, ctx.session.userId),
     });
 
     const results = await betterPromiseSettle(
@@ -62,7 +64,7 @@ export const saveGamesRouter = createTRPCRouter({
       }
 
       await ctx.db
-        .insert(schema.saveGames)
+        .insert(saveGames)
         .values({
           uniqueMultiplayerId,
           playerName,
@@ -70,7 +72,7 @@ export const saveGamesRouter = createTRPCRouter({
           money,
           playtime,
           path,
-          userId: ctx.auth.userId,
+          userId: ctx.session.userId,
         })
         .execute();
     }),
@@ -87,7 +89,7 @@ export const saveGamesRouter = createTRPCRouter({
 
       const saveExists = await ctx.db.query.saveGames.findFirst({
         where: (save, { and, eq }) =>
-          and(eq(save.id, id), eq(save.userId, ctx.auth.userId)),
+          and(eq(save.id, id), eq(save.userId, ctx.session.userId)),
       });
 
       if (!saveExists) {
@@ -95,9 +97,9 @@ export const saveGamesRouter = createTRPCRouter({
       }
 
       await ctx.db
-        .update(schema.saveGames)
+        .update(saveGames)
         .set({ syncEnabled: enabled })
-        .where(eq(schema.saveGames.id, id));
+        .where(eq(saveGames.id, id));
     }),
 
   upload: protectedProcedure
@@ -113,21 +115,21 @@ export const saveGamesRouter = createTRPCRouter({
 
       const saveExists = await ctx.db.query.saveGames.findFirst({
         where: (save, { and, eq }) =>
-          and(eq(save.id, id), eq(save.userId, ctx.auth.userId)),
+          and(eq(save.id, id), eq(save.userId, ctx.session.userId)),
       });
 
       if (!saveExists) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      const key = `saves/${ctx.auth.userId}/${id}.zip`;
+      const key = `saves/${ctx.session.userId}/${id}.zip`;
 
       const presignedPost = await createPresignedUploadURL(key);
 
       await ctx.db
-        .update(schema.saveGames)
+        .update(saveGames)
         .set({ money, playtime, fileKey: key })
-        .where(eq(schema.saveGames.id, id));
+        .where(eq(saveGames.id, id));
 
       return {
         presignedPost,
