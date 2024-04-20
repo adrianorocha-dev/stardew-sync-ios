@@ -11,11 +11,14 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.0",
+    "@libsql/client": "^0.6.0",
     "@react-navigation/native": "^6.1.7",
     "@tanstack/react-query": "^5.29.2",
     "@trpc/client": "^11.0.0-rc.342",
     "@trpc/react-query": "^11.0.0-rc.342",
     "@trpc/server": "^11.0.0-rc.342",
+    "arctic": "^1.5.0",
+    "drizzle-orm": "^0.30.8",
     "expo": "~50.0.7",
     "expo-constants": "~15.4.5",
     "expo-linking": "~6.2.2",
@@ -39,16 +42,17 @@
     "zod": "^3.22.5"
   },
   "devDependencies": {
-    "ajv": "^8.12.0",
     "@babel/core": "^7.20.0",
     "@types/react": "~18.2.14",
     "@typescript-eslint/eslint-plugin": "^6.7.2",
     "@typescript-eslint/parser": "^6.7.2",
+    "ajv": "^8.12.0",
+    "drizzle-kit": "^0.20.16",
     "eslint": "^8.50.0",
     "eslint-config-universe": "^12.0.0",
     "prettier": "^3.2.5",
-    "tailwindcss": "^3.4.0",
     "prettier-plugin-tailwindcss": "^0.5.11",
+    "tailwindcss": "^3.4.0",
     "typescript": "^5.3.3"
   },
   "eslintConfig": {

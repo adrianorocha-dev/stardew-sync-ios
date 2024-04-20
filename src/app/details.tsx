@@ -26,7 +26,7 @@ export default function Details() {
 }
 
 function TRPCDemo() {
-  const { data, isLoading, error } = api.hello.useQuery({ name: "Adriano" });
+  const { data, isLoading, error } = api.listUsers.useQuery();
 
   if (isLoading) {
     return <ActivityIndicator />;
@@ -36,5 +36,7 @@ function TRPCDemo() {
     return <Text className="text-red-500">{error.message}</Text>;
   }
 
-  return <Text>{data?.text}</Text>;
+  console.log(process.env);
+
+  return <Text>{data?.length}</Text>;
 }
