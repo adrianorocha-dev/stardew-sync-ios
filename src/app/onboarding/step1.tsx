@@ -15,7 +15,7 @@ export default function OnboardingStep1() {
       <StatusBar style="light" translucent />
 
       <LinearGradient
-        className="flex-1"
+        style={{ flex: 1 }}
         colors={[theme.colors.gradient[900], theme.colors.gradient[100]]}
       >
         <ImageBackground
@@ -31,7 +31,7 @@ export default function OnboardingStep1() {
                   Welcome to Stardew Sync
                 </Text>
 
-                <Link href="/profile" asChild>
+                <Link href="/saves" asChild>
                   <Button className="mt-6">Continue</Button>
                 </Link>
               </View>

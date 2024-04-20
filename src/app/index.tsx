@@ -37,7 +37,7 @@ export default function Index() {
     }
 
     if (!authIsLoading && isSignedIn) {
-      return router.replace("/profile");
+      return router.replace("/saves");
     }
 
     if (!authIsLoading && !isSignedIn) {

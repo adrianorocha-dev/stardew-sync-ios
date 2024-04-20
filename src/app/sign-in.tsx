@@ -21,7 +21,7 @@ export default function LoginPage() {
     signInWithOAuth("discord")
       .then(() => {
         console.log("Signed in with Discord");
-        router.replace("/profile");
+        router.replace("/saves");
       })
       .catch((error) => {
         console.error(error);

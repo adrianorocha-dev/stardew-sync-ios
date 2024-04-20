@@ -5,10 +5,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 import { saveGames } from "~/server/db/schema";
-import {
-  createPresignedDownloadURL,
-  createPresignedUploadURL,
-} from "~/server/services/s3";
+import { utapi } from "~/server/uploadthing/core";
 import { betterPromiseSettle } from "~/utils/betterPromiseSettle";
 
 export const saveGamesRouter = createTRPCRouter({
@@ -17,20 +14,16 @@ export const saveGamesRouter = createTRPCRouter({
       where: (save, { eq }) => eq(save.userId, ctx.session.userId),
     });
 
-    const results = await betterPromiseSettle(
-      saves.map(async (save) => ({
-        ...save,
-        downloadLink: save.fileKey
-          ? await createPresignedDownloadURL(save.fileKey)
-          : null,
-      })),
+    const downloadUrls = new Map(
+      (
+        await utapi.getFileUrls(saves.map((s) => s.fileKey).filter(Boolean))
+      ).map(({ key, url }) => [key, url]),
     );
 
-    if (results.rejected.length > 0) {
-      console.error(results.rejected.map((e) => e.reason));
-    }
-
-    return results.fulfilled.map((i) => i.value);
+    return saves.map((s) => ({
+      ...s,
+      fileKey: s.fileKey && downloadUrls.get(s.fileKey),
+    }));
   }),
 
   create: protectedProcedure
@@ -63,18 +56,15 @@ export const saveGamesRouter = createTRPCRouter({
         return saveAlreadyExists;
       }
 
-      await ctx.db
-        .insert(saveGames)
-        .values({
-          uniqueMultiplayerId,
-          playerName,
-          farmName,
-          money,
-          playtime,
-          path,
-          userId: ctx.session.userId,
-        })
-        .execute();
+      await ctx.db.insert(saveGames).values({
+        uniqueMultiplayerId,
+        playerName,
+        farmName,
+        money,
+        playtime,
+        path,
+        userId: ctx.session.userId,
+      });
     }),
 
   toggleSync: protectedProcedure
@@ -124,7 +114,9 @@ export const saveGamesRouter = createTRPCRouter({
 
       const key = `saves/${ctx.session.userId}/${id}.zip`;
 
-      const presignedPost = await createPresignedUploadURL(key);
+      const uploadUrl = await utapi.getSignedURL(key, {
+        expiresIn: "5 minutes",
+      });
 
       await ctx.db
         .update(saveGames)
@@ -132,7 +124,7 @@ export const saveGamesRouter = createTRPCRouter({
         .where(eq(saveGames.id, id));
 
       return {
-        presignedPost,
+        uploadUrl,
       };
     }),
 });

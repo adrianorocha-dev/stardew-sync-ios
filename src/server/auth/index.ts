@@ -23,3 +23,19 @@ declare module "lucia" {
 }
 
 export type Provider = "discord";
+
+export const getSessionToken = async (authHeader?: string | null) => {
+  if (!authHeader) {
+    return null;
+  }
+
+  const sessionId = lucia.readBearerToken(authHeader);
+
+  if (!sessionId) {
+    return null;
+  }
+
+  const { session } = await lucia.validateSession(sessionId);
+
+  return session;
+};

@@ -30,6 +30,6 @@ export default function AppLayout() {
 
   // This layout can be deferred because it's not the root layout.
   return (
-    <Stack screenOptions={{ headerShown: false }} initialRouteName="profile" />
+    <Stack screenOptions={{ headerShown: false }} initialRouteName="saves" />
   );
 }

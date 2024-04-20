@@ -3,24 +3,8 @@ import { Session } from "lucia";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { lucia } from "../auth";
+import { getSessionToken } from "../auth";
 import { db } from "../db";
-
-const getSessionToken = async (authHeader?: string | null) => {
-  if (!authHeader) {
-    return null;
-  }
-
-  const sessionId = lucia.readBearerToken(authHeader);
-
-  if (!sessionId) {
-    return null;
-  }
-
-  const { session } = await lucia.validateSession(sessionId);
-
-  return session;
-};
 
 /**
  * 1. CONTEXT
