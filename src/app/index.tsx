@@ -16,11 +16,20 @@ export default function Home() {
           <InternalizationExample />
         </ScreenContent>
 
-        <TRPCDemo />
+        <View>
+          <Link href="/login" asChild>
+            <Button title="Login" onPress={() => {}} />
+          </Link>
 
-        <Link href={{ pathname: "/details", params: { name: "Dan" } }} asChild>
-          <Button title="Show Details" onPress={() => {}} />
-        </Link>
+          <TRPCDemo />
+
+          <Link
+            href={{ pathname: "/details", params: { name: "Dan" } }}
+            asChild
+          >
+            <Button title="Show Details" onPress={() => {}} />
+          </Link>
+        </View>
       </Container>
     </>
   );
