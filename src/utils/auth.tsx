@@ -14,8 +14,11 @@ import { getBaseUrl } from "./getBaseURL";
 
 import type { Provider } from "~/server/auth";
 
+const TOKEN_STORAGE_KEY = "session-token";
+
 type AuthContextData = {
   isLoading: boolean;
+  isSignedIn: boolean;
   getToken: () => Promise<string | null>;
   signInWithOAuth: (provider: Provider) => Promise<void>;
   signOut: () => Promise<void>;
@@ -42,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return sessionToken;
     }
 
-    return await SecureStore.getItemAsync("session-token");
+    return await SecureStore.getItemAsync(TOKEN_STORAGE_KEY);
   }, [sessionToken]);
 
   const signInWithOAuth = useCallback(async (provider: Provider) => {
@@ -51,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const oAuthUrl = new URL(`${getBaseUrl()}/api/auth/${provider}`);
 
-    const sessionToken = await SecureStore.getItemAsync("session-token");
+    const sessionToken = await SecureStore.getItemAsync(TOKEN_STORAGE_KEY);
     if (sessionToken) {
       oAuthUrl.searchParams.set("sessionToken", sessionToken);
     }
@@ -78,15 +81,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     setSessionToken(resultingSessionToken);
-    await SecureStore.setItemAsync("session-token", resultingSessionToken);
+    await SecureStore.setItemAsync(TOKEN_STORAGE_KEY, resultingSessionToken);
   }, []);
 
-  const signOut = useCallback(async () => {}, []);
+  const signOut = useCallback(async () => {
+    const response = await fetch(`${getBaseUrl()}/api/auth/sign-out`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${sessionToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("sign out error:", await response.text());
+      return;
+    }
+
+    await SecureStore.deleteItemAsync(TOKEN_STORAGE_KEY);
+    setSessionToken(null);
+  }, []);
 
   useEffect(() => {
     (async () => {
       setIsLoading(true);
-      const sessionToken = await SecureStore.getItemAsync("session_token");
+      const sessionToken = await SecureStore.getItemAsync(TOKEN_STORAGE_KEY);
       if (sessionToken) {
         setSessionToken(sessionToken);
       }
@@ -96,7 +114,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ isLoading, getToken, signInWithOAuth, signOut }}
+      value={{
+        isLoading,
+        isSignedIn: !!sessionToken,
+        getToken,
+        signInWithOAuth,
+        signOut,
+      }}
     >
       {children}
     </AuthContext.Provider>

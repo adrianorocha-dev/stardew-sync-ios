@@ -1,51 +1,59 @@
-import { Stack, Link } from "expo-router";
-import { ActivityIndicator, Text, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Button } from "~/components/Button";
-import { Container } from "~/components/Container";
-import { InternalizationExample } from "~/components/InternalizationExample";
-import { ScreenContent } from "~/components/ScreenContent";
-import { api } from "~/utils/api";
+import { BaseAppBackground } from "~/components/ui/BaseAppBackground";
+import { useAuth } from "~/utils/auth";
 
-export default function Home() {
-  return (
-    <>
-      <Stack.Screen options={{ title: "Home" }} />
-      <Container>
-        <ScreenContent path="app/index.tsx" title="Home">
-          <InternalizationExample />
-        </ScreenContent>
+export default function Index() {
+  const router = useRouter();
 
-        <View>
-          <Link href="/login" asChild>
-            <Button title="Login" onPress={() => {}} />
-          </Link>
+  const { data: isOnboardingComplete, isLoading: isOnboardingLoading } =
+    useQuery({
+      queryKey: ["is-onboarding-complete"],
+      queryFn: async () => {
+        const isOnboardingComplete = await AsyncStorage.getItem(
+          "@IsOnboardingComplete",
+        );
 
-          <TRPCDemo />
+        return isOnboardingComplete === "true";
+      },
+    });
 
-          <Link href="/details" asChild>
-            <Button title="Show Details" onPress={() => {}} />
-          </Link>
-        </View>
-      </Container>
-    </>
-  );
-}
+  const { isLoading: authIsLoading, isSignedIn } = useAuth();
 
-function TRPCDemo() {
-  const { data, isLoading, error } = api.hello.useQuery({ name: "Adriano" });
+  useEffect(() => {
+    if (!isOnboardingLoading && !isOnboardingComplete) {
+      router.replace("/onboarding/step1");
+    }
+  }, [isOnboardingLoading, isOnboardingComplete, router]);
 
-  if (isLoading) {
-    return <ActivityIndicator />;
+  useEffect(() => {
+    if (isOnboardingLoading) {
+      return;
+    }
+
+    if (!authIsLoading && isSignedIn) {
+      return router.replace("/profile");
+    }
+
+    if (!authIsLoading && !isSignedIn) {
+      return router.replace("/sign-in");
+    }
+  }, [authIsLoading, isOnboardingLoading, isSignedIn, router]);
+
+  if (authIsLoading || isOnboardingLoading) {
+    return null;
   }
 
-  if (error) {
-    return <Text className="text-red-500">{error.message}</Text>;
-  }
-
   return (
-    <View className="items-center justify-center">
-      <Text>{data?.text}</Text>
-    </View>
+    <BaseAppBackground>
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#FFF" />
+      </SafeAreaView>
+    </BaseAppBackground>
   );
 }

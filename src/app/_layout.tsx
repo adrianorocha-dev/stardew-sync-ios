@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 
 import { TRPCProvider } from "~/utils/api";
 import { AuthProvider } from "~/utils/auth";
@@ -10,7 +11,13 @@ export default function Layout() {
   return (
     <AuthProvider>
       <TRPCProvider>
-        <Stack />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        />
+
+        <StatusBar />
       </TRPCProvider>
     </AuthProvider>
   );

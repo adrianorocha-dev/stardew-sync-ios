@@ -11,19 +11,13 @@ const getSessionToken = async (authHeader?: string | null) => {
     return null;
   }
 
-  const [type, token] = authHeader.split(" ");
+  const sessionId = lucia.readBearerToken(authHeader);
 
-  if (type !== "Bearer") {
-    console.error("Invalid session token type");
+  if (!sessionId) {
     return null;
   }
 
-  if (!token) {
-    console.error("Session token not present");
-    return null;
-  }
-
-  const { session } = await lucia.validateSession(token);
+  const { session } = await lucia.validateSession(sessionId);
 
   return session;
 };
