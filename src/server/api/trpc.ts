@@ -1,8 +1,32 @@
 import { TRPCError, initTRPC } from "@trpc/server";
+import { Session } from "lucia";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
+import { lucia } from "../auth";
 import { db } from "../db";
+
+const getSessionToken = async (authHeader?: string | null) => {
+  if (!authHeader) {
+    return null;
+  }
+
+  const [type, token] = authHeader.split(" ");
+
+  if (type !== "Bearer") {
+    console.error("Invalid session token type");
+    return null;
+  }
+
+  if (!token) {
+    console.error("Session token not present");
+    return null;
+  }
+
+  const { session } = await lucia.validateSession(token);
+
+  return session;
+};
 
 /**
  * 1. CONTEXT
@@ -18,15 +42,23 @@ import { db } from "../db";
  */
 export const createTRPCContext = async (opts: {
   headers: Headers;
-  // auth?: Auth;
+  session?: Session | null;
 }) => {
-  // const authData = opts.auth ?? auth();
+  const session =
+    opts.session ?? (await getSessionToken(opts.headers.get("Authorization")));
   const source = opts.headers.get("x-trpc-source") ?? "unknown";
 
-  console.log(">>> tRPC Request from", source, "by" /*, authData?.userId*/);
+  console.log({ session });
+
+  console.log(
+    ">>> tRPC Request from",
+    source,
+    "by",
+    session?.userId ?? "unknown",
+  );
 
   return {
-    // auth: authData,
+    session,
     db,
   };
 };
@@ -79,13 +111,15 @@ export const publicProcedure = t.procedure;
  * @see https://trpc.io/docs/procedures
  */
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
-  // if (!ctx.auth.userId) {
-  //   throw new TRPCError({ code: "UNAUTHORIZED" });
-  // }
+  if (!ctx.session) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
 
   return next({
     ctx: {
-      // auth: ctx.auth,
+      ...ctx,
+      // infers that `session` is non-nullable to downstream resolvers
+      session: ctx.session,
     },
   });
 });

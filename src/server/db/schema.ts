@@ -2,7 +2,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { InferSelectModel, sql } from "drizzle-orm";
 import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 
-export const users = sqliteTable("users", {
+export const users = sqliteTable("user", {
   id: text("id")
     .primaryKey()
     .notNull()
@@ -22,12 +22,9 @@ export type User = Pick<
   "id" | "name" | "avatarUrl"
 >;
 
-export const session = sqliteTable("session", {
-  id: text("id")
-    .primaryKey()
-    .notNull()
-    .$defaultFn(() => createId()),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+export const sessions = sqliteTable("session", {
+  id: text("id").primaryKey().notNull(),
+  expiresAt: integer("expires_at").notNull(),
   userId: text("user_id")
     .notNull()
     .references(() => users.id),

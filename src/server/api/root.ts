@@ -1,8 +1,8 @@
 import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { z } from "zod";
 
-import { publicProcedure, createTRPCRouter, protectedProcedure } from "./trpc";
-import { users } from "../db/schema";
+import { usersRouter } from "./routers/users";
+import { publicProcedure, createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
   hello: publicProcedure
@@ -13,15 +13,7 @@ export const appRouter = createTRPCRouter({
       };
     }),
 
-  // getSecretMessage: protectedProcedure.query(({ ctx }) => {
-  //   return {
-  //     text: `Hi ${ctx.auth.userId}, you can now see this secret message!`,
-  //   };
-  // }),
-
-  listUsers: publicProcedure.query(({ ctx }) => {
-    return ctx.db.select().from(users);
-  }),
+  users: usersRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -23,10 +23,7 @@ export default function Home() {
 
           <TRPCDemo />
 
-          <Link
-            href={{ pathname: "/details", params: { name: "Dan" } }}
-            asChild
-          >
+          <Link href="/details" asChild>
             <Button title="Show Details" onPress={() => {}} />
           </Link>
         </View>
