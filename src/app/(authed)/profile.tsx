@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { pickFolder } from "../../../modules/rn-directory-picker";
+
 import { BaseAppBackground } from "~/components/ui/BaseAppBackground";
 import { Button } from "~/components/ui/Button";
 import { api } from "~/utils/api";
@@ -53,6 +55,8 @@ export default function Profile() {
                 {/* {saveGames?.length} Farm{(saveGames?.length ?? 0) > 1 && "s"} */}
               </Text>
             </View>
+
+            <Button onPress={() => pickFolder()}>Pick folder</Button>
 
             {/* <View className="flex-row items-center">
             <Switch />

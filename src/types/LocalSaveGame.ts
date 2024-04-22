@@ -5,7 +5,7 @@ export type SaveGame = RouterOutputs["saveGames"]["list"][number];
 export type LocalSaveGame = Omit<
   SaveGame,
   | "id"
-  | "downloadLink"
+  | "downloadUrl"
   | "syncEnabled"
   | "userId"
   | "fileKey"

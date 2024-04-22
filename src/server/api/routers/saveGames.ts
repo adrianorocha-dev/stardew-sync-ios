@@ -22,7 +22,7 @@ export const saveGamesRouter = createTRPCRouter({
 
     return saves.map((s) => ({
       ...s,
-      fileKey: s.fileKey && downloadUrls.get(s.fileKey),
+      downloadUrl: s.fileKey && downloadUrls.get(s.fileKey),
     }));
   }),
 

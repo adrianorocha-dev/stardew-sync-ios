@@ -1,0 +1,118 @@
+diff --git a/node_modules/expo-document-picker/build/index.d.ts b/node_modules/expo-document-picker/build/index.d.ts
+index 7a9391f..0a15e0d 100644
+--- a/node_modules/expo-document-picker/build/index.d.ts
++++ b/node_modules/expo-document-picker/build/index.d.ts
+@@ -10,6 +10,6 @@ import { DocumentPickerOptions, DocumentPickerResult } from './types';
+  *
+  * If the user cancelled the document picking, the promise resolves to `{ type: 'cancel' }`.
+  */
+-export declare function getDocumentAsync({ type, copyToCacheDirectory, multiple, }?: DocumentPickerOptions): Promise<DocumentPickerResult>;
++export declare function getDocumentAsync({ type, copyToCacheDirectory, multiple, selectFolders }?: DocumentPickerOptions): Promise<DocumentPickerResult>;
+ export * from './types';
+ //# sourceMappingURL=index.d.ts.map
+\ No newline at end of file
+diff --git a/node_modules/expo-document-picker/build/index.js b/node_modules/expo-document-picker/build/index.js
+index 7bc0b95..a273008 100644
+--- a/node_modules/expo-document-picker/build/index.js
++++ b/node_modules/expo-document-picker/build/index.js
+@@ -11,7 +11,7 @@ import ExpoDocumentPicker from './ExpoDocumentPicker';
+  *
+  * If the user cancelled the document picking, the promise resolves to `{ type: 'cancel' }`.
+  */
+-export async function getDocumentAsync({ type = '*/*', copyToCacheDirectory = true, multiple = false, } = {}) {
++export async function getDocumentAsync({ type = '*/*', copyToCacheDirectory = true, multiple = false, selectFolders = false } = {}) {
+     if (typeof type === 'string') {
+         type = [type];
+     }
+@@ -19,6 +19,7 @@ export async function getDocumentAsync({ type = '*/*', copyToCacheDirectory = tr
+         type,
+         copyToCacheDirectory,
+         multiple,
++        selectFolders,
+     });
+ }
+ export * from './types';
+diff --git a/node_modules/expo-document-picker/build/types.d.ts b/node_modules/expo-document-picker/build/types.d.ts
+index e61d273..c76f9a3 100644
+--- a/node_modules/expo-document-picker/build/types.d.ts
++++ b/node_modules/expo-document-picker/build/types.d.ts
+@@ -20,6 +20,12 @@ export type DocumentPickerOptions = {
+      *
+      */
+     multiple?: boolean;
++
++    /**
++     * Allows selecting folders from the system UI.
++     * @default false
++     */
++    selectFolders?: boolean;
+ };
+ export type DocumentPickerAsset = {
+     /**
+diff --git a/node_modules/expo-document-picker/ios/DocumentPickerModule.swift b/node_modules/expo-document-picker/ios/DocumentPickerModule.swift
+index 40f8884..fe5454a 100644
+--- a/node_modules/expo-document-picker/ios/DocumentPickerModule.swift
++++ b/node_modules/expo-document-picker/ios/DocumentPickerModule.swift
+@@ -204,10 +204,10 @@ public class DocumentPickerModule: Module, PickingResultHandler {
+ 
+   private func createDocumentPicker(with options: DocumentPickerOptions) -> UIDocumentPickerViewController {
+     if #available(iOS 14.0, *) {
+-      let utTypes = options.type.compactMap { toUTType(mimeType: $0) }
++      var utTypes = options.type.compactMap { toUTType(mimeType: $0) }
+       return UIDocumentPickerViewController(
+-        forOpeningContentTypes: utTypes,
+-        asCopy: true
++        forOpeningContentTypes: options.selectFolders ? [.folder] : utTypes,
++        asCopy: !options.selectFolders
+       )
+     } else {
+       let utiTypes = options.type.map { toUTI(mimeType: $0) }
+diff --git a/node_modules/expo-document-picker/ios/DocumentPickerOptions.swift b/node_modules/expo-document-picker/ios/DocumentPickerOptions.swift
+index 54c71af..922e193 100644
+--- a/node_modules/expo-document-picker/ios/DocumentPickerOptions.swift
++++ b/node_modules/expo-document-picker/ios/DocumentPickerOptions.swift
+@@ -10,4 +10,7 @@ struct DocumentPickerOptions: Record {
+ 
+   @Field
+   var multiple: Bool
++
++  @Field
++  var selectFolders: Bool
+ }
+diff --git a/node_modules/expo-document-picker/src/index.ts b/node_modules/expo-document-picker/src/index.ts
+index 3fdc871..5450484 100644
+--- a/node_modules/expo-document-picker/src/index.ts
++++ b/node_modules/expo-document-picker/src/index.ts
+@@ -17,6 +17,7 @@ export async function getDocumentAsync({
+   type = '*/*',
+   copyToCacheDirectory = true,
+   multiple = false,
++  selectFolders = false,
+ }: DocumentPickerOptions = {}): Promise<DocumentPickerResult> {
+   if (typeof type === 'string') {
+     type = [type] as string[];
+@@ -25,6 +26,7 @@ export async function getDocumentAsync({
+     type,
+     copyToCacheDirectory,
+     multiple,
++    selectFolders,
+   });
+ }
+ 
+diff --git a/node_modules/expo-document-picker/src/types.ts b/node_modules/expo-document-picker/src/types.ts
+index 2b2ee54..1eefe76 100644
+--- a/node_modules/expo-document-picker/src/types.ts
++++ b/node_modules/expo-document-picker/src/types.ts
+@@ -21,6 +21,12 @@ export type DocumentPickerOptions = {
+    *
+    */
+   multiple?: boolean;
++
++  /**
++   * Allows selecting folders from the system UI.
++   * @default false
++   */
++  selectFolders?: boolean;
+ };
+ 
+ export type DocumentPickerAsset = {

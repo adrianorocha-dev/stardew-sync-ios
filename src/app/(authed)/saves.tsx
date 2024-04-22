@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SaveGameCard } from "~/components/SaveGameCard";
 import { BaseAppBackground } from "~/components/ui/BaseAppBackground";
 import { Button } from "~/components/ui/Button";
+import { localSaveGamesService } from "~/lib/LocalSaveGames";
 // import { localSaveGamesService } from "~/lib/LocalSaveGames";
 import { api } from "~/utils/api";
 // import { betterPromiseSettle } from "~/utils/betterPromiseSettle";
@@ -70,15 +71,15 @@ export default function SaveGamesList() {
   const selectedSaves = saveGames?.filter((save) => save.syncEnabled) ?? [];
 
   async function fetchLocalSaves() {
-    // const localSaveGames = await localSaveGamesService.listLocalSaves();
-    // const savesNotSynced = localSaveGames.filter((localSave) =>
-    //   saveGames?.every(
-    //     (save) => localSave.uniqueMultiplayerId !== save.uniqueMultiplayerId,
-    //   ),
-    // );
-    // for (const localSave of savesNotSynced) {
-    //   createSaveGameMutation.mutate(localSave);
-    // }
+    const localSaveGames = await localSaveGamesService.listLocalSaves();
+    const savesNotSynced = localSaveGames.filter((localSave) =>
+      saveGames?.every(
+        (save) => localSave.uniqueMultiplayerId !== save.uniqueMultiplayerId,
+      ),
+    );
+    for (const localSave of savesNotSynced) {
+      createSaveGameMutation.mutate(localSave);
+    }
   }
 
   function handleRefreshSavesList() {

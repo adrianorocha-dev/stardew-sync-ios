@@ -17,10 +17,7 @@ export const getBaseUrl = () => {
   console.log("localhost:", localhost);
 
   if (!localhost) {
-    // return "https://turbo.t3.gg";
-    throw new Error(
-      "Failed to get localhost. Please point to your production server.",
-    );
+    return process.env.EXPO_PUBLIC_API_URL;
   }
   return `http://${localhost}`;
 };

@@ -1,3 +1,3 @@
-import { RNFSSaveGamesService } from "./implementations/RNFS/RNFSSaveGamesService";
+import { ExpoFSSaveGamesService } from "./implementations/ExpoFileSystem/ExpoFSSaveGamesService";
 
-export const localSaveGamesService = new RNFSSaveGamesService();
+export const localSaveGamesService = new ExpoFSSaveGamesService();

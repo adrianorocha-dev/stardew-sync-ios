@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios"],
+  "ios": {
+    "modules": ["RnDirectoryPickerModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.rndirectorypicker.RnDirectoryPickerModule"]
+  }
+}
